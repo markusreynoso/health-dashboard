@@ -4,11 +4,20 @@ import pandas as pd
 from dash import Dash, html, dcc, Input, Output 
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
 
 """ Variables"""
 
-df = pd.read_csv("https://raw.githubusercontent.com/markusreynoso/dashboard-datasets/refs/heads/main/Life%20Expectancy/Life%20Expectancy%20Data.csv")
-countryCoords = {
+dataset_url = "https://raw.githubusercontent.com/markusreynoso/dashboard-datasets/refs/heads/main/Life%20Expectancy/Life%20Expectancy%20Data.csv"
+light = "#E6FDFF"
+dark = "#1D2829"
+dark2 = "#181f1f"
+mint = "#36BA9B"
+emerald = "#4EDFA0"
+red_bright = "#F8333C"
+red_dark = "#960200"
+
+country_coords = {
     'Afghanistan': (33.93911, 67.709953),
     'Albania': (41.153332, 20.168331),
     'Algeria': (28.033886, 1.659626),
@@ -143,7 +152,11 @@ countryCoords = {
     'Zambia': (-13.133897, 27.849332),
     'Zimbabwe': (-19.015438, 29.154857)
 }
-year_options = {f'{year}': year for year in range(2000, 2015)}
+year_options = [{'label': str(year), 'value': year} for year in range(2000,2015)]
+development_color_map = {
+    'Developing': red_bright,
+    'Developed': emerald
+}
 
 """ Dashboard """
 
@@ -156,14 +169,213 @@ app.layout = html.Div(
             children='Life Expectancy Dashboard'
         ),
 
-        dcc.Dropdown(
-            className='year-dropdown',
-            options=year_options,
-            placeholder='Select year',
-            clearable=False
-        )
+        html.Div(
+            id='map-div',
+            className='card',
+            children=[
+                dcc.Graph(
+                    id='map-graph',
+                    figure={}
+                )
+            ]
+        ),
+
+        html.Div(
+            id='tray-1',
+            children=[
+                html.Div(
+                    id='group-1',
+                    children=[
+                        html.Div(
+                            id='tray-1-controls',
+                            children=[
+                                dcc.Dropdown(
+                                    id='year-dropdown',
+                                    className='dropdown',
+                                    options=year_options,
+                                    placeholder='Select year',
+                                    clearable=False,
+                                    value=2000
+                                ),
+
+                                dcc.RadioItems(
+                                    id='radio-buttons',
+                                    options=[
+                                        {'label': 'Top', 'value': 'top'},
+                                        {'label': 'Bottom', 'value': 'bottom'}
+                                    ],
+                                    value='top',
+                                    labelStyle={'margin': '0 40px'}
+                                )
+                            ]
+                        ),
+
+                        html.Div(
+                            className='card',
+                            id='scatter-div',
+                            children=dcc.Graph(id='scatter-graph')
+                            )
+                            ]
+                        ),
+
+                html.Div(
+                    id='group-2',
+                    children=[
+                        dcc.Dropdown(
+                            className='dropdown',
+                            id='factor-dropdown',
+                            options=[
+                                        {'label': 'Average BMI', 'value': 'bmi'},
+                                        {'label': 'Alcohol Consumption per capita (15+) in Liters', 'value': 'alcohol'},
+                                        {'label': 'Number of Infant Deaths per 1000 population', 'value': 'infant_deaths'},
+                                        {'label': 'Number of under-five deaths per 1000 population', 'value': 'under-five_deaths'},
+                                        {'label': 'Measles - reported cases per 1000 population', 'value': 'measles'},
+                                        {'label': 'Polio immunization among 1-year-olds (%)', 'value': 'polio'},
+                                        {'label': 'Hepatitis B immunization among 1-year-olds (%)', 'value': 'hepatitis_b'},
+                                        {'label': 'Diphtheria tetanus toxoid and pertussis immunization among 1-year-olds (%)', 'value': 'diphtheria'},
+                                        {'label': 'Country GDP', 'value': 'gdp'},
+                                        {'label': 'Expenditure on health as a percentage of total government expenditure (%)', 'value': 'total_expenditure'},
+                                        {'label': 'Number of years of Schooling (years)', 'value': 'schooling'},
+                                    ],
+                            value='bmi'
+                        ),
+
+                        html.Div(
+                            className='card',
+                            id='correlation-div',
+                            children=['temp']
+                        )
+                    ]
+                )
+            ]
+        ),
     ]
 )
 
+@app.callback(
+    Output(component_id='map-graph', component_property='figure'),
+    Input(component_id='year-dropdown', component_property='value')
+)
+def update_map(year):
+    df = pd.read_csv(dataset_url)
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df['lon'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[1])
+    df['lat'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[0])
+    df.dropna(inplace=True)
+
+    min_life_expectancy = df['life_expectancy'].min()
+    max_life_expectancy = df['life_expectancy'].max()
+
+    map_fig = px.scatter_mapbox(
+        df.loc[df['year'] == year],
+        lon='lon',
+        lat='lat',
+        zoom=1,
+        mapbox_style='carto-darkmatter',
+        color='life_expectancy',
+        color_continuous_scale=[red_dark, red_bright, mint, emerald],
+        range_color=[min_life_expectancy, max_life_expectancy],
+        title='Life Expectancy',
+        hover_name='country',
+        hover_data={'life_expectancy': True, 'lon': False, 'lat': False}
+    )
+
+    map_fig.update_traces(hovertemplate='<b>Country:</b> %{hovertext}<br>' +
+                                       '<b>Life Expectancy:</b> %{customdata[0]:.2f}<br>' +
+                                       '<extra></extra>')
+
+    map_fig.update_layout(
+        paper_bgcolor=dark2,
+        title=dict(
+            text='Life Expectancy per Country',
+            font=dict(
+                family='Poppins',
+                color=light),
+            y=0.1,
+            x=0.5,
+            xanchor='center'
+        ),
+        coloraxis_colorbar=dict(
+            orientation='h',
+            title=None,
+            title_font=dict(color=light),
+            tickfont=dict(color=light),
+            thickness=15,
+            len=0.7,
+            xanchor='center',
+            x=0.5,
+            yanchor='bottom',
+            y=0.05,
+            outlinecolor='black',
+            outlinewidth=2,
+            tickvals=[min_life_expectancy, max_life_expectancy],
+            ticktext=[f'{min_life_expectancy:.1f}', f'{max_life_expectancy:.1f}'],
+    ),
+        margin=dict(l=25, r=25, t=25, b=25)
+    )
+
+    return map_fig
+
+
+@app.callback(
+    Output(component_id='scatter-graph', component_property='figure'),
+    [Input(component_id='year-dropdown', component_property='value'),
+     Input(component_id='factor-dropdown', component_property='value')]
+)
+def updateScatter(year, factor):
+    if factor is None or factor == '':
+        return px.scatter()
+    df = pd.read_csv(dataset_url)
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df['lon'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[1])
+    df['lat'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[0])
+    df.dropna(inplace=True)
+    df = df.loc[df['year'] == year]
+
+    scatter_fig = px.scatter(
+        df,
+        x=factor,
+        y='life_expectancy',
+        color='status',
+        color_discrete_map=development_color_map,
+        hover_data={'country': True, 'life_expectancy': True}
+    )
+
+    scatter_fig.update_layout(
+        paper_bgcolor='#1a1a1a',
+        plot_bgcolor='#262626',
+        font=dict(color='white'),
+        legend=dict(
+            title='Status',
+            orientation='h',
+            yanchor='bottom',
+            y=-0.3,
+            xanchor='center',
+            x=0.5
+        )
+    )
+
+    scatter_fig.update_traces(
+        hovertemplate='<b>Country:</b> %{text}<br>' +
+                      '<b>Life Expectancy:</b> %{y}<br>' +
+                      '<extra></extra>',
+        text=df['country']
+    )
+
+    scatter_fig.update_xaxes(
+        gridcolor='#3d3d3d',
+        gridwidth=1,
+        zerolinecolor='#3d3d3d',
+        zerolinewidth=2
+    )
+
+    scatter_fig.update_yaxes(
+        gridcolor='#3d3d3d',
+        gridwidth=1,
+        zerolinecolor='#3d3d3d',
+        zerolinewidth=2
+    )
+
+    return scatter_fig
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, dev_tools_hot_reload=False)

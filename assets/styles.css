@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
-:root{
+:root {
     --light: #E6FDFF;
     --dark: #1D2829;
     --dark2: #181f1f;
@@ -20,7 +20,7 @@ body {
     background-color: var(--dark);
 }
 
-#main-wrapper{
+#main-wrapper {
     padding: 5vh 8vw;
 }
 
@@ -31,15 +31,74 @@ body {
     font-size: 3em;
     color: var(--light);
     margin-bottom: 2vh;
+    display: flex;
+    justify-content: center;
 }
 
-.year-dropdown{
+.card {
+    background-color: var(--dark2);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.dropdown {
     font-family: 'Poppins', sans-serif;
     font-weight: 300;
     font-style: normal;
-    text-align: center;
-    width: 15%;
+
 }
+
+#tray-1 {
+    height: 75vh;
+    display: flex;
+    flex-direction: row;
+    margin: 3vh 0;
+}
+
+#group-1{
+    display: flex;
+    width: 40%;
+    flex-direction: column;
+    margin-right: 2vw;
+}
+
+#tray-1-controls{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#year-dropdown {
+    width: 30%;
+    margin-bottom: 3vh;
+    text-align: center;
+}
+
+
+#radio-buttons{
+    font-family: 'Poppins', sans-serif;
+    color: var(--light);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#group-2 {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
+#factor-dropdown{
+    z-index: 0;
+    margin-bottom: 3vh;
+}
+
+#correlation-div{
+    height: 100%;
+}
+
+
 
 .Select-control {
     background-color: var(--dark) !important;
@@ -52,4 +111,8 @@ body {
 .Select-menu-outer {
     background-color: var(--dark);
     color: var(--light);
+}
+
+dropdown::-webkit-scrollbar-track {
+    background: red;
 }
