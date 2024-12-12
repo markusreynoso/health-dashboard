@@ -5,6 +5,7 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import plotly.figure_factory as ff
 
 """ Variables"""
 
@@ -197,16 +198,6 @@ app.layout = html.Div(
                                     clearable=False,
                                     value=2000
                                 ),
-
-                                dcc.RadioItems(
-                                    id='radio-buttons',
-                                    options=[
-                                        {'label': 'Top', 'value': 'top'},
-                                        {'label': 'Bottom', 'value': 'bottom'}
-                                    ],
-                                    value='top',
-                                    labelStyle={'margin': '0 40px'}
-                                )
                             ]
                         ),
 
@@ -237,13 +228,18 @@ app.layout = html.Div(
                                         {'label': 'Expenditure on health as a percentage of total government expenditure (%)', 'value': 'total_expenditure'},
                                         {'label': 'Number of years of Schooling (years)', 'value': 'schooling'},
                                     ],
-                            value='bmi'
+                            value='bmi',
+                            clearable=False
                         ),
 
                         html.Div(
                             className='card',
-                            id='correlation-div',
-                            children=['temp']
+                            id='histogram-div',
+                            children=[
+                                dcc.Graph(
+                                    id='histogram-graph'
+                                )
+                            ]
                         )
                     ]
                 )
@@ -257,7 +253,7 @@ app.layout = html.Div(
     Input(component_id='year-dropdown', component_property='value')
 )
 def update_map(year):
-    df = pd.read_csv(dataset_url)
+    df = pd.read_csv(dataset_url).dropna()
     df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
     df['lon'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[1])
     df['lat'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[0])
@@ -322,10 +318,10 @@ def update_map(year):
     [Input(component_id='year-dropdown', component_property='value'),
      Input(component_id='factor-dropdown', component_property='value')]
 )
-def updateScatter(year, factor):
+def update_scatter(year, factor):
     if factor is None or factor == '':
         return px.scatter()
-    df = pd.read_csv(dataset_url)
+    df = pd.read_csv(dataset_url).dropna()
     df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
     df['lon'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[1])
     df['lat'] = df['country'].apply(lambda x: country_coords.get(x, (np.nan, np.nan))[0])
@@ -342,9 +338,9 @@ def updateScatter(year, factor):
     )
 
     scatter_fig.update_layout(
-        paper_bgcolor='#1a1a1a',
-        plot_bgcolor='#262626',
-        font=dict(color='white'),
+        paper_bgcolor=dark2,
+        plot_bgcolor=dark2,
+        font=dict(color=light),
         legend=dict(
             title='Status',
             orientation='h',
@@ -377,5 +373,38 @@ def updateScatter(year, factor):
     )
 
     return scatter_fig
+
+
+@app.callback(
+    Output(component_id='histogram-graph', component_property='figure'),
+    [Input(component_id='year-dropdown', component_property='value'),
+     Input(component_id='factor-dropdown', component_property='value')]
+)
+def update_histogram(selected_year, selected_factor):
+    df = pd.read_csv(dataset_url).dropna()
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df = df.loc[df['year'] == selected_year]
+    fig = ff.create_distplot(
+            [df.loc[df['status'] == 'Developing'][selected_factor], df.loc[df['status'] == 'Developed'][selected_factor]],
+            ['Developing', 'Developed'],
+            colors=[red_bright, emerald],
+            show_rug=False
+        )
+    
+    fig.update_layout(
+        paper_bgcolor=dark2,
+        plot_bgcolor=dark2,
+        font=dict(color=light),
+        legend=dict(
+            title='Status',
+            orientation='h',
+            yanchor='bottom',
+            y=-0.3,
+            xanchor='center',
+            x=0.5
+        )
+    )
+    return fig
+
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
