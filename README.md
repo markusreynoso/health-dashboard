@@ -1,0 +1,1 @@
+This dashboard was made to be viewed on PC. If you decide to view this on mobile, I cannot guarantee that it will look good.
