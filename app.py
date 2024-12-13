@@ -532,6 +532,14 @@ def update_bar(year, factor):
 
     return fig
 
+@app.callback(
+    Output(component_id='country-dynamic-text', component_property='children'),
+    [Input(component_id='focus-country-dropdown', component_property='value'),
+     Input(component_id='focus-year-dropdown', component_property='value')]
+)
+def update_focus_country(country, year):
+    return f"{country} ({year})"
+
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
