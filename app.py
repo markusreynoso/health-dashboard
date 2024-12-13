@@ -154,6 +154,19 @@ country_coords = {
     'Zimbabwe': (-19.015438, 29.154857)
 }
 year_options = [{'label': str(year), 'value': year} for year in range(2000,2015)]
+factor_options = [{'label': 'Average BMI', 'value': 'bmi'},
+                  {'label': 'Alcohol Consumption per capita (15+) in Liters', 'value': 'alcohol'},
+                  {'label': 'Number of Infant Deaths per 1000 population', 'value': 'infant_deaths'},
+                  {'label': 'Number of under-five deaths per 1000 population', 'value': 'under-five_deaths'},
+                  {'label': 'Measles - reported cases per 1000 population', 'value': 'measles'},
+                  {'label': 'Polio immunization among 1-year-olds (%)', 'value': 'polio'},
+                  {'label': 'Hepatitis B immunization among 1-year-olds (%)', 'value': 'hepatitis_b'},
+                  {'label': 'Diphtheria tetanus toxoid and pertussis immunization among 1-year-olds (%)', 'value': 'diphtheria'},
+                  {'label': 'Country GDP', 'value': 'gdp'},
+                  {'label': 'Expenditure on health as a percentage of total government expenditure (%)', 'value': 'total_expenditure'},
+                  {'label': 'Number of years of Schooling (years)', 'value': 'schooling'},
+                  ]
+country_options = list(country_coords.keys())
 development_color_map = {
     'Developing': red_bright,
     'Developed': emerald
@@ -249,7 +262,46 @@ app.layout = html.Div(
                     id='bar-graph'
                 )
             ]
+        ),
+
+        html.Div(
+            html.Center(children=[
+                html.H2(id='country-dynamic-text', children='temp'),
+                html.H2(id='focus-title', children='- a closer look')
+                ]
+            )
+        ),
+
+        html.Div(
+            id='focus-section-controls-container',
+            children=[
+                
+                dcc.Dropdown(
+                    className='dropdown',
+                    id='focus-country-dropdown',
+                    options=country_options,
+                    clearable=False,
+                    value='Philippines'
+                ),
+
+                dcc.Dropdown(
+                    className='dropdown',
+                    id='focus-year-dropdown',
+                    options=year_options,
+                    clearable=False,
+                    value=2000
+                ),
+
+                dcc.Dropdown(
+                    className='dropdown',
+                    id='focus-factors-dropdown',
+                    options=factor_options,
+                    clearable=False,
+                    value='bmi'
+                )
+            ]
         )
+        
     ]
 )
 
@@ -454,7 +506,7 @@ def update_bar(year, factor):
             xanchor='center'
         ),
         yaxis=dict(
-            range=[min_value, max_value]  # Zoom in to show differences
+            range=[min_value, max_value]
         ),
         paper_bgcolor=dark2,
         plot_bgcolor=dark2,

@@ -24,6 +24,14 @@ body {
     padding: 5vh 8vw;
 }
 
+h2{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 2.5em;
+    color: var(--light);
+}
+
 #dashboard-title {
     font-family: 'Poppins', sans-serif;
     font-weight: 300;
@@ -45,6 +53,7 @@ body {
     font-family: 'Poppins', sans-serif;
     font-weight: 300;
     font-style: normal;
+    z-index: 1;
 
 }
 
@@ -65,11 +74,9 @@ body {
 #year-dropdown {
     width: 30%;
     margin-top: 3vh;
-    text-align: center;
     position: relative;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1;
 }
 
 #scatter-div{
@@ -83,7 +90,6 @@ body {
 }
 
 #factor-dropdown{
-    z-index: 1;
     margin-top: 3vh;
 }
 
@@ -93,6 +99,36 @@ body {
 
 #bar-div{
     height: 70vh;
+    margin-bottom: 3vh;
+}
+
+#country-dynamic-text{
+    display: inline-block;
+}
+
+#focus-title{
+    display: inline-block;
+    margin-left: 15px;
+    margin-top: 5vh;
+}
+
+#focus-section-controls-container{
+    padding: 20px 60px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#focus-country-dropdown{
+    width: 20%;
+}
+
+#focus-year-dropdown{
+    width: 10%;
+}
+
+#focus-factors-dropdown{
+    width: 40%;
 }
 
 .Select-control {
