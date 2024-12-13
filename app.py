@@ -286,14 +286,6 @@ app.layout = html.Div(
 
                 dcc.Dropdown(
                     className='dropdown',
-                    id='focus-year-dropdown',
-                    options=year_options,
-                    clearable=False,
-                    value=2000
-                ),
-
-                dcc.Dropdown(
-                    className='dropdown',
                     id='focus-factors-dropdown',
                     options=factor_options,
                     clearable=False,
@@ -534,11 +526,10 @@ def update_bar(year, factor):
 
 @app.callback(
     Output(component_id='country-dynamic-text', component_property='children'),
-    [Input(component_id='focus-country-dropdown', component_property='value'),
-     Input(component_id='focus-year-dropdown', component_property='value')]
+    [Input(component_id='focus-country-dropdown', component_property='value'),]
 )
-def update_focus_country(country, year):
-    return f"{country} ({year})"
+def update_focus_country(country):
+    return f"{country}"
 
 
 if __name__ == '__main__':
