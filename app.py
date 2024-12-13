@@ -447,6 +447,12 @@ def update_bar(year, factor):
     max_value = df1[factor].max() * 1.1
 
     fig.update_layout(
+        title=dict(
+            text='Top countries in this category',
+            x=0.5,
+            y=0.9,
+            xanchor='center'
+        ),
         yaxis=dict(
             range=[min_value, max_value]  # Zoom in to show differences
         ),
