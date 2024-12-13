@@ -188,30 +188,35 @@ app.layout = html.Div(
                     id='group-1',
                     children=[
                         html.Div(
-                            id='tray-1-controls',
-                            children=[
-                                dcc.Dropdown(
+                            className='card',
+                            id='scatter-div',
+                            children=dcc.Graph(id='scatter-graph')
+                            ),
+
+                        dcc.Dropdown(
                                     id='year-dropdown',
                                     className='dropdown',
                                     options=year_options,
                                     placeholder='Select year',
                                     clearable=False,
                                     value=2000
-                                ),
-                            ]
-                        ),
-
-                        html.Div(
-                            className='card',
-                            id='scatter-div',
-                            children=dcc.Graph(id='scatter-graph')
-                            )
+                                )
                             ]
                         ),
 
                 html.Div(
                     id='group-2',
                     children=[
+                        html.Div(
+                            className='card',
+                            id='histogram-div',
+                            children=[
+                                dcc.Graph(
+                                    id='histogram-graph'
+                                )
+                            ]
+                        ),
+
                         dcc.Dropdown(
                             className='dropdown',
                             id='factor-dropdown',
@@ -230,21 +235,21 @@ app.layout = html.Div(
                                     ],
                             value='bmi',
                             clearable=False
-                        ),
-
-                        html.Div(
-                            className='card',
-                            id='histogram-div',
-                            children=[
-                                dcc.Graph(
-                                    id='histogram-graph'
-                                )
-                            ]
                         )
                     ]
                 )
             ]
         ),
+
+        html.Div(
+            className='card',
+            id='bar-div',
+            children=[
+                dcc.Graph(
+                    id='bar-graph'
+                )
+            ]
+        )
     ]
 )
 
@@ -283,7 +288,7 @@ def update_map(year):
     map_fig.update_layout(
         paper_bgcolor=dark2,
         title=dict(
-            text='Life Expectancy per Country',
+            text=f'Life Expectancy per Country (years)- {year}',
             font=dict(
                 family='Poppins',
                 color=light),
@@ -294,8 +299,12 @@ def update_map(year):
         coloraxis_colorbar=dict(
             orientation='h',
             title=None,
-            title_font=dict(color=light),
-            tickfont=dict(color=light),
+            title_font=dict(
+                family='Poppins',
+                color=light),
+            tickfont=dict(
+                family='Poppins',
+                color=light),
             thickness=15,
             len=0.7,
             xanchor='center',
@@ -340,7 +349,12 @@ def update_scatter(year, factor):
     scatter_fig.update_layout(
         paper_bgcolor=dark2,
         plot_bgcolor=dark2,
-        font=dict(color=light),
+        font=dict(
+                family='Poppins',
+                color=light),
+        titlefont=dict(
+                family='Poppins',
+                color=light),
         legend=dict(
             title='Status',
             orientation='h',
@@ -366,9 +380,9 @@ def update_scatter(year, factor):
     )
 
     scatter_fig.update_yaxes(
-        gridcolor='#3d3d3d',
+        gridcolor=light,
         gridwidth=1,
-        zerolinecolor='#3d3d3d',
+        zerolinecolor=light,
         zerolinewidth=2
     )
 
@@ -394,8 +408,13 @@ def update_histogram(selected_year, selected_factor):
     fig.update_layout(
         paper_bgcolor=dark2,
         plot_bgcolor=dark2,
-        font=dict(color=light),
+        font=dict(
+                family='Poppins',
+                color=light),
         legend=dict(
+            font=dict(
+                family='Poppins',
+                color=light),
             title='Status',
             orientation='h',
             yanchor='bottom',
@@ -405,6 +424,56 @@ def update_histogram(selected_year, selected_factor):
         )
     )
     return fig
+
+@app.callback(
+    Output(component_id='bar-graph', component_property='figure'),
+    [Input(component_id='year-dropdown', component_property='value'),
+     Input(component_id='factor-dropdown', component_property='value')]
+)
+def update_bar(year, factor):
+    df = pd.read_csv(dataset_url).dropna()
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df1 = df.loc[df['year'] == year].sort_values(factor, ascending=False).nlargest(10, factor)
+
+    fig = px.bar(
+            df1.sort_values(factor, ascending=False),
+            x='country',
+            y=factor,
+            color='status',
+            color_discrete_map=development_color_map,
+        )
+    
+    min_value = df1[factor].min() * 0.9
+    max_value = df1[factor].max() * 1.1
+
+    fig.update_layout(
+        yaxis=dict(
+            range=[min_value, max_value]  # Zoom in to show differences
+        ),
+        paper_bgcolor=dark2,
+        plot_bgcolor=dark2,
+        font=dict(color=light),
+        legend=dict(
+            font=dict(
+                family='Poppins',
+                color=light),
+            title='Status',
+            orientation='h',
+            yanchor='bottom',
+            y=-0.3,
+            xanchor='center',
+            x=0.5
+        ),
+        margin=dict(
+            l=80,
+            r=50,
+            t=50,
+            b=50
+        )
+    )
+
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)

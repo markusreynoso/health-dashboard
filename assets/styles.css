@@ -62,16 +62,14 @@ body {
     margin-right: 2vw;
 }
 
-#tray-1-controls{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-}
-
 #year-dropdown {
     width: 30%;
-    margin-bottom: 3vh;
+    margin-top: 3vh;
     text-align: center;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
 }
 
 #scatter-div{
@@ -86,14 +84,16 @@ body {
 
 #factor-dropdown{
     z-index: 1;
-    margin-bottom: 3vh;
+    margin-top: 3vh;
 }
 
 #histogram-div{
     height: 100%;
 }
 
-
+#bar-div{
+    height: 70vh;
+}
 
 .Select-control {
     background-color: var(--dark) !important;
