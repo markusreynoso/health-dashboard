@@ -180,7 +180,7 @@ app.layout = html.Div(
     children=[
         html.H1(
             id='dashboard-title',
-            children='Life Expectancy Dashboard'
+            children='World Life Expectancy Dashboard'
         ),
 
         html.Div(
@@ -267,29 +267,113 @@ app.layout = html.Div(
         html.Div(
             html.Center(children=[
                 html.H2(id='country-dynamic-text', children='temp'),
-                html.H2(id='focus-title', children='- a closer look')
+                html.H2(id='focus-title', children=': A Closer Look')
                 ]
             )
         ),
 
+        
         html.Div(
-            id='focus-section-controls-container',
+            id='focus-section-top-group',
             children=[
-                
-                dcc.Dropdown(
-                    className='dropdown',
-                    id='focus-country-dropdown',
-                    options=country_options,
-                    clearable=False,
-                    value='Philippines'
+                html.Div(
+                    className='card',
+                    id='focus-section-controls-container',
+                    children=[         
+                        html.P(
+                            id='focus-section-controls-title',
+                            children='Controls'
+                        ),
+
+                        dcc.Dropdown(
+                            className='dropdown',
+                            id='focus-country-dropdown',
+                            options=country_options,
+                            clearable=False,
+                            value='Philippines'
+                        ),
+
+                        dcc.Dropdown(
+                            className='dropdown',
+                            id='focus-year-dropdown',
+                            options=year_options,
+                            clearable=False,
+                            value=2000
+                        ),
+                        ]
                 ),
 
-                dcc.Dropdown(
-                    className='dropdown',
-                    id='focus-factors-dropdown',
-                    options=factor_options,
-                    clearable=False,
-                    value='bmi'
+                html.Div(
+                    id='focus-section-grid-container',
+                    children=[
+                        html.Div(
+                            className='stat-card',
+                            id='status-container',
+                            children=[
+                                html.P(
+                                    className='stat-title',
+                                    children='Status'
+                                ),
+
+                                html.P(
+                                    className='stat',
+                                    id='status-stat',
+                                    children='test'
+                                )
+                            ]
+                        ),
+
+                        html.Div(
+                            className='stat-card',
+                            id='population-container',
+                            children=[
+                                html.P(
+                                    className='stat-title',
+                                    children='Population'
+                                ),
+
+                                html.P(
+                                    className='stat',
+                                    id='population-stat',
+                                    children='test'
+                                )
+                            ]
+                        ),
+
+                        html.Div(
+                            className='stat-card',
+                            id='gdp-container',
+                            children=[
+                                html.P(
+                                    className='stat-title',
+                                    children='GDP'
+                                ),
+
+                                html.P(
+                                    className='stat',
+                                    id='gdp-stat',
+                                    children='test'
+                                )
+                            ]
+                        ),
+
+                        html.Div(
+                            className='stat-card',
+                            id='life-expectancy-container',
+                            children=[
+                                html.P(
+                                    className='stat-title',
+                                    children='Life Expectancy'
+                                ),
+
+                                html.P(
+                                    className='stat',
+                                    id='life-expectancy-stat',
+                                    children='test'
+                                )
+                            ]
+                        )
+                    ]
                 )
             ]
         )
@@ -332,7 +416,7 @@ def update_map(year):
     map_fig.update_layout(
         paper_bgcolor=dark2,
         title=dict(
-            text=f'Life Expectancy per Country (years)- {year}',
+            text=f'Life Expectancy per Country (years) in {year}',
             font=dict(
                 family='Poppins',
                 color=light),
@@ -493,6 +577,9 @@ def update_bar(year, factor):
     fig.update_layout(
         title=dict(
             text='Top countries in this category',
+            font=dict(
+                family='Poppins',
+                color=light),
             x=0.5,
             y=0.9,
             xanchor='center'
@@ -526,11 +613,33 @@ def update_bar(year, factor):
 
 @app.callback(
     Output(component_id='country-dynamic-text', component_property='children'),
-    [Input(component_id='focus-country-dropdown', component_property='value'),]
+    [Input(component_id='focus-country-dropdown', component_property='value'),
+    Input(component_id='focus-year-dropdown', component_property='value'),]
 )
-def update_focus_country(country):
-    return f"{country}"
+def update_focus_country(country, year):
+    return f"{country} ({year})"
 
+
+@app.callback(
+    [Output(component_id='status-stat', component_property='children'),
+     Output(component_id='population-stat', component_property='children'),
+     Output(component_id='gdp-stat', component_property='children'),
+     Output(component_id='life-expectancy-stat', component_property='children')],
+    [Input(component_id='focus-country-dropdown', component_property='value'),
+    Input(component_id='focus-year-dropdown', component_property='value'),]
+)
+def update_stats(country, year):
+    df = pd.read_csv(dataset_url).dropna()
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df = df.loc[(df['year'] == year) & (df['country'] == country)]
+
+    status = df['status'].iloc[0] if 'status' in df.columns and not df.empty else 'No data'
+    pop = f"{int(df['population'].iloc[0]):,}" if 'population' in df.columns and not df.empty else 'No data'
+    gdp = f"{round(df['gdp'].iloc[0], 2):,}" if 'gdp' in df.columns and not df.empty else 'No data'
+    le = df['life_expectancy'].iloc[0] if 'life_expectancy' in df.columns and not df.empty else 'No data'
+
+    return status, pop, gdp, le
+    
 
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)
