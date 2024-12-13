@@ -12,7 +12,7 @@ import plotly.figure_factory as ff
 dataset_url = "https://raw.githubusercontent.com/markusreynoso/dashboard-datasets/refs/heads/main/Life%20Expectancy/Life%20Expectancy%20Data.csv"
 light = "#E6FDFF"
 dark = "#1D2829"
-dark2 = "#181f1f"
+dark2 = "#121717"
 mint = "#36BA9B"
 emerald = "#4EDFA0"
 red_bright = "#F8333C"
@@ -166,6 +166,8 @@ factor_options = [{'label': 'Average BMI', 'value': 'bmi'},
                   {'label': 'Expenditure on health as a percentage of total government expenditure (%)', 'value': 'total_expenditure'},
                   {'label': 'Number of years of Schooling (years)', 'value': 'schooling'},
                   ]
+var_options = [x for x in factor_options]
+var_options.append({'label': 'Life Expectancy', 'value': 'life_expectancy'})
 country_options = list(country_coords.keys())
 development_color_map = {
     'Developing': red_bright,
@@ -346,7 +348,7 @@ app.layout = html.Div(
                             children=[
                                 html.P(
                                     className='stat-title',
-                                    children='GDP'
+                                    children='GDP per capita (in USD)'
                                 ),
 
                                 html.P(
@@ -376,6 +378,20 @@ app.layout = html.Div(
                     ]
                 )
             ]
+        ),
+
+        dcc.Dropdown(
+           className='dropdown',
+           id='factor-dropdown-line',
+           options=var_options,
+           clearable=False,
+           value='bmi'
+        ),
+
+        html.Div(
+            className='card',
+            id='line-div',
+            children=dcc.Graph(id='line-graph')
         )
         
     ]
@@ -640,6 +656,47 @@ def update_stats(country, year):
 
     return status, pop, gdp, le
     
+@app.callback(
+    Output(component_id='line-graph', component_property='figure'),
+    [Input(component_id='focus-country-dropdown', component_property='value'),
+     Input(component_id='factor-dropdown-line', component_property='value')]
+)
+def update_line(country, factor):
+    df = pd.read_csv(dataset_url).dropna()
+    df.columns = [x.strip().lower().replace('  ', '_').replace(' ', '_') for x in df.columns]
+    df = df.loc[df['country'] == country]
 
+    fig = px.line(
+        df,
+        x='year',
+        y=factor
+    )
+
+    fig.update_layout(
+        xaxis=dict(
+            tickmode='linear',
+            tickfont=dict(color=light),
+            titlefont=dict(color=light),
+            tickcolor=dark,
+            gridcolor=dark
+        ),
+        yaxis=dict(
+            tickfont=dict(color=light),
+            titlefont=dict(color=light),
+            tickcolor=dark,
+            gridcolor=dark
+        ),
+        paper_bgcolor=dark2,
+        plot_bgcolor=dark2,
+        font=dict(color=light)
+    )
+
+
+
+    fig.update_traces(
+        line=dict(color=emerald),
+    )
+
+    return fig
 if __name__ == '__main__':
     app.run_server(debug=True, dev_tools_hot_reload=False)

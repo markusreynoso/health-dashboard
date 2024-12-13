@@ -3,7 +3,7 @@
 :root {
     --light: #E6FDFF;
     --dark: #1D2829;
-    --dark2: #181f1f;
+    --dark2: #121717;
     --mint: #36BA9B;
     --emerald: #4EDFA0;
     --red-bright: #F8333C;
@@ -116,6 +116,7 @@ h2{
 #focus-section-top-group{
     display: flex;
     flex-direction: row;
+    margin-bottom: 3vh;
 }
 
 #focus-section-controls-container{
@@ -180,6 +181,13 @@ h2{
     color: var(--light);
 }
 
+#factor-dropdown-line{
+    margin-bottom: 3vh;
+}
+
+#line-div{
+    height: 70vh;
+}
 
 .Select-control {
     background-color: var(--dark) !important;
@@ -192,8 +200,4 @@ h2{
 .Select-menu-outer {
     background-color: var(--dark);
     color: var(--light);
-}
-
-dropdown::-webkit-scrollbar-track {
-    background: red;
 }
